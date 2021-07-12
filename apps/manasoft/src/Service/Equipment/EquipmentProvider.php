@@ -28,7 +28,7 @@ class EquipmentProvider implements EquipmentProviderInterface
         /* 3. Get sort */
         if (!empty($queryParams['sort'])) {
             if (!in_array($queryParams['sort'], array_keys(Equipment::SORTS))) {
-                throw new Exception(InfoCodes::RQT_WRONG_SORTS, Response::HTTP_BAD_REQUEST);
+                throw new Exception(InfoCodes::EQUIPMENT_WRONG_SORTS, Response::HTTP_BAD_REQUEST);
             }
             $params['sort'] = Equipment::SORTS[$queryParams['sort']];
         }
@@ -37,5 +37,10 @@ class EquipmentProvider implements EquipmentProviderInterface
         if (isset($queryParams['order']) && !is_null($queryParams['order'])) $params['order'] = ((int) $queryParams['order'] === 1 ? 'ASC' : 'DESC');
 
         return $params;
+    }
+
+    public function createEquipment()
+    {
+
     }
 }
