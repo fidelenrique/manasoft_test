@@ -16,6 +16,8 @@ abstract class InfoCodes
     const RES_NOT_FOUND = 'RSCNFND';
     const EQUIPMENT_NOT_FOUND = 'EQPNFND';
 
-    const EQUIPMENT_NOT_NUMBER = 'EQPNONU';
-    const EQUIPMENT_NOT_DESCRIPTION = 'EQPNODE';
+    const NOT_FOUND_NUMBER = 'EQPNFNU';
+    const EQUIPMENT_NOT_NUMERIC = 'EQPNONU';
+    const NOT_FOUND_NAME = 'EQPNONA';
+    const NOT_FOUND_CATEGORY = 'EQPNOCA';
 }

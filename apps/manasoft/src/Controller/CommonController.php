@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Equipment;
 use App\Service\InfoCodes;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,17 +18,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class CommonController extends AbstractController
 {
-    protected EntityManagerInterface $em;
-
-    /**
-     * CommonController constructor.
-     * @param EntityManagerInterface $em
-     */
-    public function __construct(EntityManagerInterface $em)
-    {
-        $this->em = $em;
-    }
-
     protected function getJsonContent($message): array
     {
         $data = [];

@@ -5,10 +5,27 @@ namespace App\Service\Equipment;
 use App\Entity\Equipment;
 use App\Service\InfoCodes;
 use Doctrine\DBAL\Exception;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Validator\EquipmentValidatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 class EquipmentProvider implements EquipmentProviderInterface
 {
+    protected EntityManagerInterface $em;
+    protected EquipmentValidatorInterface $validatorEqt;
+
+    /**
+     * EquipmentController constructor.
+     * @param EntityManagerInterface $em
+     * @param EquipmentValidatorInterface $vEqt
+     */
+    public function __construct(EntityManagerInterface $em, EquipmentValidatorInterface $vEqt)
+    {
+        $this->em = $em;
+        $this->validatorEqt = $vEqt;
+    }
+
     /**
      * Set and Get query params for Requests list
      * @param array $queryParams
@@ -39,8 +56,85 @@ class EquipmentProvider implements EquipmentProviderInterface
         return $params;
     }
 
-    public function createEquipment()
+    public function createEquipment($request)
     {
+        $content = (array)json_decode($request->getContent());
+        $this->validatorEqt->validateParams($content);
+        $equipment = new Equipment();
+        $equipment->setCategory($content['category']);
+        $equipment->setName($content["name"]);
+        $equipment->setNumber($content["number"]);
+        $this->em->persist($equipment);
+        $this->em->flush();
 
+        return [
+            "id" => $equipment->getId(),
+            "name" => $equipment->getName(),
+            "category" => $equipment->getCategory(),
+            "number" => $equipment->getNumber(),
+            "createdAt" => $equipment->getCreatedAt()
+        ];
+    }
+
+    /**
+     * @param Equipment $equipment
+     * @return array
+     */
+    public function getEquipment(Equipment $equipment): array
+    {
+        $object = $this->em->getRepository(Equipment::class)->findOneBy(['id' => $equipment]);
+        return [
+            "name" => $object->getName(),
+            "category" => $object->getCategory(),
+            "number" => $object->getNumber(),
+            "createdAt" => $object->getCreatedAt(),
+            "updatedAt" => $object->getUpdatedAt()
+        ];
+    }
+
+    /**
+     * @param Equipment $equipment
+     */
+    public function deleteEquipment(Equipment $equipment)
+    {
+        $this->em->remove($equipment);
+        $this->em->flush();
+    }
+
+    /**
+     * @param Equipment $equipment
+     * @param Request $request
+     * @return array
+     * @throws Exception
+     */
+    public function updateEquipment(Equipment $equipment, Request $request)
+    {
+        $content = (array)json_decode($request->getContent());
+
+        if (isset($content["name"])) {
+            $equipment->setName($content["name"]);
+        }
+
+        if (isset($content["category"])) {
+            $equipment->setCategory($content["category"]);
+        }
+
+        if (isset($content['number'])) {
+            if (!is_numeric($content['number'])) {
+                throw new Exception(InfoCodes::EQUIPMENT_NOT_NUMERIC, Response::HTTP_BAD_REQUEST);
+            }
+            $equipment->setNumber($content["number"]);
+        }
+
+        $this->em->persist($equipment);
+        $this->em->flush();
+
+        return [
+            "name" => $equipment->getName(),
+            "category" => $equipment->getCategory(),
+            "number" => $equipment->getNumber(),
+            "createdAt" => $equipment->getCreatedAt(),
+            "updatedAt" => $equipment->getUpdatedAt()
+        ];
     }
 }

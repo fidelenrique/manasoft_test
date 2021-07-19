@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Repository\EquipmentRepository;
 use App\Service\Equipment\EquipmentProviderInterface;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\Equipment;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,20 +12,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 
-
 class EquipmentController extends CommonController
 {
-    protected EntityManagerInterface $em;
     protected EquipmentProviderInterface $equipmentProvider;
 
     /**
      * EquipmentController constructor.
-     * @param EntityManagerInterface $em
      * @param EquipmentProviderInterface $eqt
      */
-    public function __construct(EntityManagerInterface $em, EquipmentProviderInterface $eqt)
+    public function __construct(EquipmentProviderInterface $eqt)
     {
-        $this->em = $em;
         $this->equipmentProvider = $eqt;
     }
 
@@ -38,7 +33,8 @@ class EquipmentController extends CommonController
      */
     public function showEquipment(Equipment $equipment): JsonResponse
     {
-        $data = (array)$this->em->getRepository(Equipment::class)->findOneBy(['id' => $equipment]);
+        $data = $this->equipmentProvider->getEquipment($equipment);
+
         return $this->json($data, Response::HTTP_OK);
     }
 
@@ -72,25 +68,39 @@ class EquipmentController extends CommonController
     public function delete(Equipment $equipment): JsonResponse
     {
         /* Delete Equipment inside database */
-        $this->em->remove($equipment);
-        $this->em->flush();
+        $this->equipmentProvider->deleteEquipment($equipment);
+
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
     }
 
     /**
      * Create a Equipment.
      *
-     * @Route("/api/equipments", name="app.equipment.create", methods={"POST"})
+     * @Route("/api/equipments", name="app.equipment.edit", methods={"POST"})
      *
      * @param Request $request
      * @return JsonResponse
      */
     public function create(Request $request)
     {
-        $demand = $this->equipmentProvider->createEquipment(json_decode($request->getContent(), true));
+        $data = $this->equipmentProvider->createEquipment($request);
 
-        $data = $this->outputDataTransformer->transform($demand, '', ['groups' => [Demand::GROUPS['item_read']['name']]]);
+        return $this->json($data, Response::HTTP_OK, [], ['groups' => ['equipments']]);
+    }
 
-        return $this->json($data, Response::HTTP_CREATED, [], ['groups' => [Demand::GROUPS['item_read']['name']]]);
+    /**
+     * Update a Equipment.
+     *
+     * @Route("/api/equipment/{id}", name="app.equipment.update", methods={"PUT"}, requirements={"id"="\d+"})
+     *
+     * @param Equipment $equipment
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function update(Equipment $equipment, Request $request)
+    {
+        $data = $this->equipmentProvider->updateEquipment($equipment, $request);
+
+        return $this->json($data, Response::HTTP_OK, [], ['groups' => ['equipments']]);
     }
 }
