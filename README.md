@@ -37,4 +37,11 @@ We built some shortcuts commands to help you to do quickly some operations. Thes
 - Up all images : **docker-compose up -d**
 - Build images : **docker-compose build**
 
+## More commands GIT
+- CLONE APPLUCATION : git clone https://github.com/fidelenrique/manasoft_test.git
+- git reset --soft head~1
+- UPADTE APPICATION : git pull
+- git reset --hard head~1
+- git log NOMBRANCH..develop
+
 Have a nice day!
